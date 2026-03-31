@@ -26,6 +26,7 @@
         "jsonwebtoken": "^9.0.3",
         "lru-cache": "^5.1.1",
         "lunar-javascript": "^1.6.12",
+        "pg": "^8.11.3",
         "sql.js": "^1.10.2",
         "sqlite3": "^5.1.7"
     },

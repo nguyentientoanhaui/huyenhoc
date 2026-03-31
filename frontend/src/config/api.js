@@ -1,22 +1,31 @@
 /**
  * API Configuration
  * Automatically detects environment and sets API base URL
+ * Supports environment variables for production deployment
  */
 
-// Detect if running on production domain
-const isProduction = window.location.hostname === 'huyencobattu.com' ||
-    window.location.hostname === 'www.huyencobattu.com';
+import { appConfig } from './env.js';
 
-// API Base URL - adjust based on environment
-// In production, API should be on the same domain or a specific API subdomain
-const API_HOST = isProduction
-    ? `${window.location.protocol}//${window.location.hostname}` // Same host, port 8888
-    : 'http://localhost:8888';
+// Get API host from environment or auto-detect
+const getApiHost = () => {
+    // If VITE_API_URL is set in environment, use it
+    if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
+    }
 
-// If you want to use a subdomain like api.huyencobattu.com, uncomment below:
-// const API_HOST = isProduction 
-//     ? 'https://api.huyencobattu.com'
-//     : 'http://localhost:8888';
+    // Otherwise, detect from current location
+    const isProduction = import.meta.env.PROD;
+    
+    if (isProduction) {
+        // In production, use same host as frontend
+        return `${window.location.protocol}//${window.location.hostname}`;
+    } else {
+        // In development, use localhost:8888
+        return 'http://localhost:8888';
+    }
+};
+
+const API_HOST = getApiHost();
 
 // Export API endpoints
 export const API_CONFIG = {
@@ -26,10 +35,16 @@ export const API_CONFIG = {
     CONSULTANT: `${API_HOST}/api/consultant`,
     ADMIN: `${API_HOST}/api/admin`,
     BAZI: `${API_HOST}/api/bazi`,
+    ARTICLES: `${API_HOST}/api/articles`,
+    QUE: `${API_HOST}/api/que`,
+    TIMEOUT: appConfig.apiTimeout
 };
 
 // For debugging
-console.log('[API Config] Environment:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
-console.log('[API Config] API Host:', API_HOST);
+if (import.meta.env.DEV) {
+    console.log('[API Config] Environment:', appConfig.environment);
+    console.log('[API Config] API Host:', API_HOST);
+    console.log('[API Config] API Timeout:', appConfig.apiTimeout);
+}
 
 export default API_CONFIG;

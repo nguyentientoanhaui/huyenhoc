@@ -1,0 +1,88 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: bazi-backend
+    runtime: node
+    plan: standard
+    
+    # Build configuration
+    buildCommand: cd backendjs && npm install
+    startCommand: cd backendjs && npm start
+    
+    # Environment variables
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: Asia/Ho_Chi_Minh
+      - key: PORT
+        value: 8888
+      - key: DATABASE_URL
+        sync: false  # Set manually in Render dashboard
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://bazi-frontend.render.com,http://localhost:3005
+      - key: LOG_LEVEL
+        value: info
+    
+    # Health check configuration
+    healthCheckPath: /
+    healthCheckInterval: 30
+    
+    # Scaling configuration
+    numInstances: 1
+    
+    # Disk configuration (if needed)
+    disk:
+      name: bazi-data
+      mountPath: /data
+      sizeGB: 1
+
+  # Frontend Static Site
+  - type: static_site
+    name: bazi-frontend
+    
+    # Build configuration
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    
+    # Environment variables
+    envVars:
+      - key: VITE_API_URL
+        value: https://bazi-backend.render.com
+      - key: VITE_APP_VERSION
+        value: 2.1
+      - key: VITE_ENABLE_AI_CONSULTANT
+        value: "true"
+      - key: VITE_ENABLE_MATCHING
+        value: "true"
+      - key: VITE_ENABLE_ARTICLES
+        value: "true"
+      - key: VITE_ENABLE_ADMIN_PANEL
+        value: "true"
+    
+    # Routes configuration for SPA
+    routes:
+      - path: /*
+        destination: /index.html
+        type: rewrite
+    
+    # Headers for caching and security
+    headers:
+      - path: /
+        headers:
+          - key: Cache-Control
+            value: public, max-age=3600
+      - path: /assets/*
+        headers:
+          - key: Cache-Control
+            value: public, max-age=31536000, immutable
+      - path: /index.html
+        headers:
+          - key: Cache-Control
+            value: public, max-age=0, must-revalidate
